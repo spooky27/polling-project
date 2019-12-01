@@ -1,0 +1,143 @@
+{% extends "submit_app/base.html" %}
+{% block body_block %}
+
+<div class="jumbotron">
+  <h3>Live poll update:</h3>
+  <br>
+    {% if dict_to_render %}
+    <table class="table table-hover">
+      <thead>
+        <th scope="col">Event</th>
+        <th scope="col">Speaker</th>
+        <th scope="col">Speaker Topic</th>
+        <th scope="col">Feedback #</th>
+      </thead>
+
+      {% for speaker, val in dict_to_render.items %}
+      <tr>
+       <th scope="row">{{ speaker.eventId }}</th>
+       <td> {{ speaker.speakerId }} </td>
+       <td> {{ speaker.speakerTopic }} </td>
+       <td> <h4 id="speaker_id_{{ speaker.speakerId.speakerId }}"> {{ val }} </h4> </td>
+       </tr>
+       {% endfor %}
+
+
+       {% for eventfeedbackcount in event_feedback_render %}
+       <tr>
+        <th scope="row"><h3>Event Feedback</h3></th>
+        <td> &nbsp; </td>
+        <td> &nbsp; </td>
+        <td> <h3 id="event_id"> {{ eventfeedbackcount }} </h3> </td>
+       </tr>
+       {% endfor %}
+
+  {% else %}
+       <h2>No speakers enabled for active polling</h2>
+  {% endif %}
+      </table>
+
+</div>
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+/*
+  var loops = 0;
+
+  function explode(){
+    loops +=1;
+  //  alert("Boom!");
+    if(loops<3) {
+      setTimeout(explode, 2000);
+    }
+  }
+  setTimeout(explode, 2000);
+*/
+
+// $("#^speaker_id_1").click(function () {
+
+// $("#^speaker_id_1").click(function () {
+
+// });
+
+var counter = 0;
+var loop = 120;
+var timeout = 5000;
+
+autoRefreshCount();
+
+function poll() {
+    counter += 1;
+    if(counter<loop) {
+      setTimeout(function ()  { autoRefreshCount(); } , timeout);
+    }
+}
+
+function autoRefreshCount() {
+
+        console.log('autorefresh function invoked, counter ' + counter);
+      //  console.log(counter);
+
+        data = {};
+
+        $.ajax({
+            dataType: "json",
+            url: '/ajax/getpollcount',
+            data: data,
+            success: function (speaker_poll_count) {
+          //    console.log('in success of ajax call');
+              if (speaker_poll_count) {
+            //      console.log(speaker_poll_count + 'is the value of speaker_poll_count');
+            //    console.log(speaker_poll_count);
+
+                $.each(speaker_poll_count, function(spk, ct) {
+
+                    //Update event feedbac count
+                    var id_to_check = "#" + spk;
+
+                    if ($(id_to_check).length)  {
+
+                        if( $(id_to_check).text() != ct) {
+                             $(id_to_check).text(ct);
+                          //   $(id_to_check).css({ 'color': 'red' });
+                             $(id_to_check).fadeOut(600);
+                             $(id_to_check).fadeIn(600);
+                          //   $(id_to_check).css({ 'color': 'blue', 'font-size': '150%' });
+                       }
+                      }
+
+
+                      // Update speaker feedback count
+                      id_to_check = '#speaker_id_' + spk;
+
+                      if ($(id_to_check).length) {
+
+                //        console.log('id to check text: ' + $(id_to_check).text());
+                  //      console.log('vol ' + ct);
+
+                        if( $(id_to_check).text() != ct) {
+                             $(id_to_check).text(ct);
+                          //   $(id_to_check).css({ 'color': 'red' });
+                             $(id_to_check).fadeOut(600);
+                             $(id_to_check).fadeIn(600);
+                          //   $(id_to_check).css({ 'color': 'blue', 'font-size': '150%' });
+                       }
+                      }
+                });
+
+              }
+                        poll();
+            },
+
+      });
+
+
+}
+
+
+
+</script>
+{% endblock %}

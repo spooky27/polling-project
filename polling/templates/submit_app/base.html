@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script type = "text/JavaScript">
+        <!--
+        //-->
+     </script>
+
+  </head>
+
+  <body>
+    <div class="container">
+      <br>
+    </div>
+
+    <div class="container">
+      <div class="shadow p-3 mb-4 bg-primary text-white rounded"><center><h1>The Polling App</h1></div>
+    </div>
+
+    <div class="container">
+      {% block body_block %}
+
+      {% endblock %}
+    </div>
+    <script
+			  src="https://code.jquery.com/jquery-3.4.1.js"
+			  integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+			  crossorigin="anonymous"></script>
+    {% block javascript %}
+    {% endblock %}
+      </body>
+</html>

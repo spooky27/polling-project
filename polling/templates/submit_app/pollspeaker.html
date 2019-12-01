@@ -1,0 +1,64 @@
+{% extends "submit_app/base.html" %}
+
+{% block body_block %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'events' %}"">Events</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'eventspeakers' %}">Feedback</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Speaker Feedback</li>
+  </ol>
+</nav>
+
+
+
+<div class="jumbotron">
+
+  {% if poll_submitted %}
+    <h3><center>Thank you for your feedback</h3>
+  {% else  %}
+
+    <h3>Fill out feedback for <b>{{ speaker_name }}</b>:</h3>
+    <br><br>
+
+    <form enctype='multipart/form-data' method='post'>
+      {% csrf_token %}
+      {{ render_poll_speaker_form.non_field_errors }}
+      <label class="form-check-label" for="{{ render_poll_speaker_form.presentationStyle.id_for_label }}">How would you rate the presentation style of the speaker? </label>
+      <br>
+      <br>
+      <div class="form-check form-check-inline">
+        {{ render_poll_speaker_form.presentationStyle }}
+      </div>
+
+      <br>
+      <label class="form-check-label" for="{{ render_poll_speaker_form.contentRelevance.id_for_label }}">How would you rate the relevance of the content? </label>
+      <br>
+      <br>
+      <div class="form-check form-check-inline">
+        {{ render_poll_speaker_form.contentRelevance }}
+      </div>
+      <br>
+
+      <div>
+        <label for="{{ render_poll_speaker_form.wentWell.id_for_label }}">What went well? </label>
+        <br>
+        {{ render_poll_speaker_form.wentWell }}
+      </div>
+      <br>
+      <div>
+        <label for="{{ render_poll_speaker_form.wentWell.id_for_label }}">What could have been done better? </label>
+        <br>
+        {{ render_poll_speaker_form.couldBeBetter }}
+      </div>
+
+      <input type="hidden" name="hidSpeakerId" value="{{ speaker_id }}">
+      <br><br>
+      <input type="submit" class="submit btn btn-primary btn-lg" name="" value="Submit">
+
+    </form>
+  {% endif %}
+
+</div>
+
+{% endblock %}

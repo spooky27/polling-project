@@ -1,0 +1,40 @@
+{% extends "submit_app/base.html" %}
+{% block body_block %}
+
+
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item active" aria-current="page">Events</li>
+    </ol>
+  </nav>
+
+
+<div class="jumbotron">
+  <h3>Live events:</h3>
+  <br>
+  {% if render_events %}
+
+    <table class="table table-hover">
+      <thead>
+        <th scope="col">Date</th>
+        <th scope="col">Event</th>
+        <th scope="col">Event Venue</th>
+      </thead>
+      {% for event in render_events %}
+
+      <tr>
+
+        <th scope="row">{{ event.eventDate }}</th>
+        <td> <a href="{% url 'eventspeakers' %}?eventId={{ event.eventId }}">{{ event.eventTopic }} </a></td>
+        <td> {{ event.eventVenue }} </td>
+
+      </tr>
+
+      {% endfor %}
+    </table>
+   {% else %}
+    <H2>No live events at this time!</H2>
+   {% endif %}
+</div>
+
+{% endblock %}

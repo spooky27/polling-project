@@ -9,6 +9,8 @@ class Event (models.Model):
     eventDate = models.DateField()
     eventVenue = models.CharField(max_length=500)
     eventOrganizer = models.CharField(max_length=500)
+    eventEnable = models.BooleanField(blank=True,default=False)
+    eventFeedackEnable = models.BooleanField(blank=True,default=False)
 
     def __str__(self):
         return self.eventTopic
@@ -25,15 +27,59 @@ class Speaker (models.Model):
 #    photo = models.bin
 
     def __str__(self):
-        return self.firstName
+        return self.firstName + " " + self.lastName
+
+
+class SpeakersForEvent(models.Model):
+    eventId = models.ForeignKey(Event,on_delete=models.CASCADE)
+    speakerId = models.ForeignKey(Speaker,on_delete=models.CASCADE)
+    speakerTopic = models.CharField(max_length=255,default="")
+    speakerSequence = models.IntegerField()
+    pollingEnabled = models.BooleanField(default=False)
+
+    def __str__(self):
+        #obj = Event.objects.get(pk=self.eventId)
+        #print(type(obj))
+        #return getattr(obj,eventTopic)
+        return self.speakerId.firstName + " " + self.speakerId.lastName
+#class Participant(models.Model):
 
 
 
 class SpeakerFeedback(models.Model):
+    feedbackId = models.AutoField(primary_key=True)
     eventId = models.ForeignKey(Event,on_delete=models.CASCADE)
-    participantFullName = models.CharField(max_length=255)
-    participantIdentifier = models.CharField(max_length=50)
+    clientIp = models.CharField(max_length=1000,blank=True,default="")
+#    participantFullName = models.CharField(max_length=255)
+#    participantId = models.CharField(max_length=50)
     speakerId = models.ForeignKey(Speaker,on_delete=models.CASCADE)
+    presentationStyle = models.IntegerField()
+    contentRelevance = models.IntegerField()
+    wentWell = models.CharField(max_length=1000,blank=True,default="")
+    couldBeBetter = models.CharField(max_length=1000,blank=True,default="")
+
 # speakers
     def __str__(self):
-        return self.participantFullName
+        return self.eventId.eventTopic + "," + self.speakerId.firstName + " " + self.speakerId.lastName
+
+
+class EventFeedback(models.Model):
+    feedbackId = models.AutoField(primary_key=True)
+    eventId = models.ForeignKey(Event,on_delete=models.CASCADE)
+    clientIp = models.CharField(max_length=1000,blank=True,default="")
+#    participantFullName = models.CharField(max_length=255)
+#    participantId = models.CharField(max_length=50)
+#    speakerId = models.ForeignKey(Speaker,on_delete=models.CASCADE)
+    participantFullName = models.CharField(max_length=100)
+    participantIdEmail = models.EmailField()
+    participantMobile =  models.CharField(max_length=15)
+    contentQuality = models.IntegerField()
+    contentRelevance = models.IntegerField()
+    overallExperience = models.IntegerField()
+    referenceable = models.BooleanField()
+    likedMost = models.CharField(max_length=1000,blank=True,default="")
+    couldBeBetter = models.CharField(max_length=1000,blank=True,default="")
+
+# speakers
+    def __str__(self):
+        return self.eventId.eventTopic + "," + self.participantFullName;
