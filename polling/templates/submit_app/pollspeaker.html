@@ -27,17 +27,25 @@
       <label class="form-check-label" for="{{ render_poll_speaker_form.presentationStyle.id_for_label }}">How would you rate the presentation style of the speaker? </label>
       <br>
       <br>
-      <div class="form-check form-check-inline">
-        {{ render_poll_speaker_form.presentationStyle }}
-      </div>
 
+      {% for radio in render_poll_speaker_form.presentationStyle %}
+      <div class="form-check">
+        {{ radio }}
+      </div>
+      {% endfor %}
       <br>
+
+
       <label class="form-check-label" for="{{ render_poll_speaker_form.contentRelevance.id_for_label }}">How would you rate the relevance of the content? </label>
       <br>
       <br>
-      <div class="form-check form-check-inline">
-        {{ render_poll_speaker_form.contentRelevance }}
+
+      {% for radio in render_poll_speaker_form.contentRelevance %}
+      <div class="form-check">
+        {{ radio }}
       </div>
+      {% endfor %}
+
       <br>
 
       <div>

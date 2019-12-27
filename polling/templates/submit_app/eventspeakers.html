@@ -14,9 +14,12 @@
 
 
 <div class="jumbotron">
-  <h3>Event Feedback:</h3>
-  <br>
 
+
+{% if render_event_feedback_enabled  or render_speakers  %}
+
+    <h3>Poll and Feedback:</h3>
+    <br>
 
     <table class="table table-hover">
       <thead>
@@ -24,6 +27,11 @@
         <th scope="col">Speaker Topic</th>
         <th scope="col">Polling status</th>
       </thead>
+{% else %}
+      <h3><center>Polling for this event not enabled at this time</center></h3>
+{% endif %}
+
+
 
   {% if render_speakers %}
 
@@ -43,6 +51,9 @@
 
   {% endif %}
 
+
+
+
   {% if render_event_feedback_enabled %}
       <th scope="row"><h4>Overall event</h4></th>
       <td>&nbsp;</td>
@@ -55,6 +66,26 @@
       <h3> No polling enabled at this time for this event</h3>
     {% endif %}
 
+
+    {% if render_poll_questions %}
+    <br>
+    <h3>Poll Question:</h3>
+    <br>
+
+    <table class="table table-hover">
+      <thead>
+        <th scope="col">Poll question</th>
+        <th scope="col">Polling status</th>
+      </thead>
+
+      {% for question in render_poll_questions %}
+
+        <th scope="row"><h4> {{ question.questionId.question }} </h4></th>
+        <td><a href="{% url 'pollquestion' %}?questionId={{question.questionId.pk}}">Enabled</a></td>
+
+      {% endfor %}
+
+    {% endif %}
 
 </div>
 

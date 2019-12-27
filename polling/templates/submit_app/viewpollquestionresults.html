@@ -1,0 +1,95 @@
+{% extends "submit_app/base.html" %}
+{% block body_block %}
+
+<div class="jumbotron">
+  <p id="question_id" hidden>{{ question_id_render }} </p>
+  <h3> {{ poll_question_render }} </h3>
+
+  <h5 style="display: inline">Responses: </h5>
+  <h5 id="response_count" style="display: inline">{{ total_responses_render }} </h5>
+  <br>
+  <br>
+
+<ul>
+  {% for question, feedback_list in dict_to_render.items %}
+
+       {% for feedback in feedback_list %}
+       <li>
+          {{ feedback }}
+       </li>
+       {% endfor %}
+
+  {% endfor %}
+</ul>
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+  var counter = 0;
+  var loop = 200;
+  var timeout = 10000;
+
+  autoRefreshCount();
+
+  function poll() {
+      counter += 1;
+      if(counter<loop) {
+        setTimeout(function ()  { autoRefreshCount(); } , timeout);
+      }
+  }
+
+  function autoRefreshCount() {
+
+          console.log('autorefresh function invoked, counter ' + counter);
+        //  console.log(counter);
+
+          var questionId = $("#question_id").text();
+          console.log('Question id is: ' + questionId)
+          data = {'questionId':questionId};
+
+          $.ajax({
+              dataType: "json",
+              url: '/ajax/getquestionresponsecount',
+              data: data,
+              success: function (answer_count) {
+
+                if (answer_count) {
+
+                  $.each(answer_count, function(count, value) {
+
+                      //Update event feedbac count
+                      console.log('answer count returend: ' + value);
+                      var id_to_update = "#response_count";
+                      console.log(  $(id_to_update).text()  );
+
+
+                //      if ($(id_to_update).length)  {
+                          console.log('found id to update');
+
+                          var current_count = $(id_to_update).text();
+
+                          if( current_count != value) {
+                               $(id_to_update).text(value);
+                            //   $(id_to_check).css({ 'color': 'red' });
+                          //     $(id_to_update).fadeOut(600);
+                          //     $(id_to_update).fadeIn(600);
+                    //      $(id_to_update).css({color: 'red'});
+                               location.reload();
+                            //   $(id_to_check).css({ 'color': 'blue', 'font-size': '150%' });
+                         }
+                      //  }
+
+                  });
+
+                }
+                          poll();
+              },
+
+        });
+
+
+  }
+
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "submit_app/base.html" %}
+
+{% block body_block %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'events' %}"">Events</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'eventspeakers' %}">Feedback</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Poll Question</li>
+  </ol>
+</nav>
+
+
+
+<div class="jumbotron">
+
+  {% if poll_question_submitted %}
+    <h3><center>Thank you for your feedback</h3>
+  {% else  %}
+
+    <h3>Fill out your response:</h3>
+    <br><br>
+
+
+    <form enctype='multipart/form-data' method='post'>
+      {% csrf_token %}
+
+      {{ render_poll_feedbadk_form.non_field_errors }}
+
+
+      <br>
+      <div class="form-check-label">
+        <h4>
+        {{ render_poll_question.question }}
+        </h4>
+      </div>
+      <br>
+      <br>
+
+      {{ render_poll_feedbadk_form.as_p }}
+
+      <br><br>
+
+      <br><br>
+      <input type="submit" class="submit btn btn-primary btn-lg" name="" value="Submit">
+
+    </form>
+
+  {% endif %}
+
+</div>
+
+{% endblock %}

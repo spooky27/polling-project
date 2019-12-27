@@ -57,6 +57,7 @@ class SpeakerFeedback(models.Model):
     contentRelevance = models.IntegerField()
     wentWell = models.CharField(max_length=1000,blank=True,default="")
     couldBeBetter = models.CharField(max_length=1000,blank=True,default="")
+    createDateTime = models.DateTimeField(auto_now_add=True)
 
 # speakers
     def __str__(self):
@@ -79,7 +80,46 @@ class EventFeedback(models.Model):
     referenceable = models.BooleanField()
     likedMost = models.CharField(max_length=1000,blank=True,default="")
     couldBeBetter = models.CharField(max_length=1000,blank=True,default="")
+    createDateTime = models.DateTimeField(auto_now_add=True)
 
 # speakers
     def __str__(self):
-        return self.eventId.eventTopic + "," + self.participantFullName;
+        return self.eventId.eventTopic + "," + self.participantFullName
+
+
+
+class QuestionType(models.Model):
+    questionType = models.CharField(max_length=15)
+
+    def __str__(self):
+        return self.questionType
+
+
+class PollQuestion(models.Model):
+    shortDescription = models.CharField(max_length=120)
+    question = models.CharField(max_length=255)
+    questionType = models.ForeignKey(QuestionType, on_delete=models.CASCADE)
+    answerOptions = models.CharField(max_length=1500,blank=True,default="")
+
+    def __str__(self):
+        return self.shortDescription
+
+
+class EventQuestion(models.Model):
+    eventId = models.ForeignKey(Event, on_delete=models.CASCADE)
+    questionId = models.ForeignKey(PollQuestion, on_delete=models.CASCADE)
+    pollingEnabled = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.eventId.eventTopic + " , " + self.questionId.shortDescription
+
+
+class PollQuestionFeedback(models.Model):
+    eventId = models.ForeignKey(Event, on_delete=models.CASCADE)
+    questionId = models.ForeignKey(PollQuestion, on_delete=models.CASCADE)
+    clientIp = models.CharField(max_length=1000,blank=True,default="")
+    questionResponse = models.CharField(max_length=1500)
+    createDateTime = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.questionResponse

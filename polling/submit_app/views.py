@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from submit_app.forms import PollSpeakerForm, EventFeedbackForm
+from submit_app.forms import PollSpeakerForm, EventFeedbackForm, PollQuestionForm
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from .models import Event, Speaker, SpeakerFeedback, SpeakersForEvent, EventFeedback
+from .models import Event, Speaker, SpeakerFeedback, SpeakersForEvent, EventFeedback, QuestionType, PollQuestion, EventQuestion, PollQuestionFeedback
 from django.shortcuts import redirect
 
 
@@ -39,10 +39,15 @@ def eventspeakers(request):
     # Chcek if eventFeedackEnable is enabled
     isEventFeedbackEnabled = Event.objects.filter(eventId=eventId,eventFeedackEnable=True)
 
+    #check if question is enabled
+
+    questions_list = EventQuestion.objects.filter(eventId=eventId,pollingEnabled=True)
+
     # provide speakers list for event
     event_speakers_list = SpeakersForEvent.objects.filter(eventId=eventId).order_by('speakerSequence')
 
-    return render(request, 'submit_app/eventspeakers.html',{'render_speakers':event_speakers_list, 'render_event_feedback_enabled':isEventFeedbackEnabled })
+
+    return render(request, 'submit_app/eventspeakers.html',{'render_speakers':event_speakers_list, 'render_event_feedback_enabled':isEventFeedbackEnabled, 'render_poll_questions':questions_list })
 
 def pollspeaker(request):
     #event_speakers_list = SpeakersForEvent.objects.order_by('speakerSequence')
@@ -183,7 +188,7 @@ def pollevent(request):
             record_feedback.clientIp = client_ip
             record_feedback.save();
             poll_submitted = True
-        
+
     else:
         event_feedbadk_form = EventFeedbackForm(req=request)
 
@@ -196,3 +201,112 @@ def geteventinsession(request):
 
 def getspeakerinsession(request):
     return request.session['speakerId']
+
+
+
+
+def pollquestion(request):
+
+
+    poll_question_submitted = False
+    pollQuestion = ""
+    client_ip = request.META['REMOTE_ADDR']
+    eventId = geteventinsession(request)
+
+    if(len(eventId) < 1):
+        return redirect('events')
+
+
+    if(request.method == 'GET') and (request.GET.get('questionId')):
+        passedQuestionId = request.GET.get('questionId')
+        request.session['questionId'] = passedQuestionId
+        pollQuestion = PollQuestion.objects.get(pk=passedQuestionId)
+        print(passedQuestionId, " in if")
+    else:
+        passedQuestionId = request.session['questionId']
+        print(passedQuestionId, " in else")
+
+
+    if(request.method == 'POST'):
+        poll_feedbadk_form = PollQuestionForm(data=request.POST,req=request)
+
+        if poll_feedbadk_form.is_valid():
+            record_poll_feedback = poll_feedbadk_form.save(commit=False)
+            record_poll_feedback.eventId = Event.objects.get(pk=eventId)
+            record_poll_feedback.clientIp = client_ip
+            record_poll_feedback.questionId = PollQuestion.objects.get(pk=passedQuestionId)
+            record_poll_feedback.save();
+            poll_question_submitted = True
+
+    else:
+        poll_feedbadk_form = PollQuestionForm(req=request)
+
+    return render(request, 'submit_app/pollquestion.html',{'render_poll_feedbadk_form':poll_feedbadk_form,'poll_question_submitted':poll_question_submitted, 'render_poll_question' : pollQuestion})
+
+
+@login_required(login_url='/admin/')
+def viewpollquestionresults(request):
+
+
+    totalResponses = 0
+    pollQuestion = ""
+    context = {}
+    dict_to_render = {}
+    question_responses = []
+
+    eventId = geteventinsession(request)
+
+    if(len(eventId) < 1):
+        return redirect('events')
+
+    enabled_poll_questions = EventQuestion.objects.filter(pollingEnabled=True, eventId=eventId)
+
+    #TODO: put in check for multiple enabled questions
+
+    event_id_for_speaker = ""
+
+    if(enabled_poll_questions):
+        for question in enabled_poll_questions:
+            pollQuestion = question.questionId.question
+            all_feedback = PollQuestionFeedback.objects.filter(eventId=question.eventId,questionId=question.questionId)
+            questionId = question.questionId.pk
+
+            feedback_list = []
+            for single_feedback in all_feedback:
+                feedback_list.append(single_feedback)
+                totalResponses = totalResponses+1
+
+                print(single_feedback)
+
+            dict_to_render[question] = feedback_list
+
+            # get event feedbackId
+
+
+        context = { 'dict_to_render': dict_to_render, 'total_responses_render': totalResponses,'poll_question_render': pollQuestion, 'question_id_render': questionId}
+
+    return render(request, 'submit_app/viewpollquestionresults.html',context)
+
+
+
+
+def getquestionresponsecount(request):
+
+    questionId = request.GET.get('questionId', None)
+    print('question id from ajax call: ',questionId)
+
+    count = 0;
+    question_response_count_dict = {}
+
+    eventId = geteventinsession(request)
+
+    if(len(eventId) < 1):
+        count = "0"
+    else:
+        enabled_poll_questions = PollQuestionFeedback.objects.filter(eventId=eventId,questionId=questionId)
+        count = enabled_poll_questions.count()
+        print('current count in views function: ' + str(count))
+
+    question_response_count_dict = {'count':count}
+
+    return JsonResponse(question_response_count_dict)

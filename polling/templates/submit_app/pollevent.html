@@ -51,26 +51,37 @@
 
         <label for="{{ render_event_feedback_form.contentQuality.id_for_label }}">How did you find the content quality </label>
         <br>
-      <div class="form-check form-check-inline">
-        {{ render_event_feedback_form.contentQuality }}
+
+      {% for radio in render_event_feedback_form.contentQuality  %}
+      <div class="form-check">
+        {{ radio }}
       </div>
+      {% endfor %}
+
+
       <br><br>
 
         <label for="{{ render_event_feedback_form.contentRelevance.id_for_label }}">How did you find the relevance of content </label>
         <br>
-      <div class="form-check form-check-inline">
-        {{ render_event_feedback_form.contentRelevance }}
+
+
+      {% for radio in render_event_feedback_form.contentRelevance  %}
+      <div class="form-check">
+        {{ radio }}
       </div>
+      {% endfor %}
+
       <br><br>
-
-
-        <label for="{{ render_event_feedback_form.overallExperience.id_for_label }}">How would you rate your overall experience of the event </label>
+      <label for="{{ render_event_feedback_form.overallExperience.id_for_label }}">How would you rate your overall experience of the event </label>
         <br>
-      <div class="form-check form-check-inline">
-        {{ render_event_feedback_form.overallExperience }}
-      </div>
-      <br><br>
 
+        {% for radio in render_event_feedback_form.overallExperience  %}
+        <div class="form-check">
+          {{ radio }}
+        </div>
+        {% endfor %}
+
+      <br><br>
 
 
       <div>

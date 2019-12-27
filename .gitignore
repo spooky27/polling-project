@@ -1,0 +1,7 @@
+# ignore the db sqlite file
+db.sqlite3
+
+# migrations
+migrations
+__pycache__
+!**/migrations/__init__
