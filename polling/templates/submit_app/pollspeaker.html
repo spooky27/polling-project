@@ -19,11 +19,22 @@
   {% else  %}
 
     <h3>Fill out feedback for <b>{{ speaker_name }}</b>:</h3>
-    <br><br>
+    <br>
 
     <form enctype='multipart/form-data' method='post'>
       {% csrf_token %}
-      {{ render_poll_speaker_form.non_field_errors }}
+
+      {% if render_poll_speaker_form.non_field_errors %}
+
+
+          <ul class="non-field-errors">
+            {% for error in render_poll_speaker_form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+      
+      {% endif %}
+
       <label class="form-check-label" for="{{ render_poll_speaker_form.presentationStyle.id_for_label }}">How would you rate the presentation style of the speaker? </label>
       <br>
       <br>

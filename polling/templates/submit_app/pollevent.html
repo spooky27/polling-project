@@ -25,7 +25,16 @@
     <form enctype='multipart/form-data' method='post'>
       {% csrf_token %}
 
-      {{ render_event_feedback_form.non_field_errors }}
+
+      {% if render_event_feedback_form.non_field_errors %}
+
+      <ul class="non-field-errors">
+        {% for error in render_event_feedback_form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+
+      {% endif %}
 
       <label class="form-check-label" for="{{ render_event_feedback_form.participantFullName.id_for_label }}">Your full name </label>
       <br>

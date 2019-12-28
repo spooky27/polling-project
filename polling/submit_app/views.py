@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Event, Speaker, SpeakerFeedback, SpeakersForEvent, EventFeedback, QuestionType, PollQuestion, EventQuestion, PollQuestionFeedback
 from django.shortcuts import redirect
+import csv
 
 
 #REDIRECT_URL_FOR_EVENT: 'submit_app/events.html'
@@ -20,16 +21,16 @@ def eventspeakers(request):
 
     eventId = ""
 
-
     if(request.method == 'GET') and (request.GET.get('eventId')):
         eventId = request.GET.get('eventId')
         request.session['eventId'] = eventId
         #speakerName = Speaker.objects.get(pk=passedSpeakerId)
         print("Event Id from event speakers, if block: ",eventId)
     else:
+        eventId = geteventinsession(request)
         if(len(eventId) < 1):
             return redirect('events')
-        eventId = request.session['eventId']
+        #eventId = request.session['eventId']
 
     # check if event is enabled
     isEventEnabled = Event.objects.filter(eventId=eventId,eventEnable=True)
@@ -109,7 +110,14 @@ def pollspeaker(request):
 @login_required(login_url='/admin/')
 def viewresults(request):
     # get list of enabled speakers
-    enabled_speakers = SpeakersForEvent.objects.filter(pollingEnabled=True)
+
+    eventId = geteventinsession(request)
+
+    if(len(eventId) < 1):
+        return redirect('resultsbyevent')
+
+
+    enabled_speakers = SpeakersForEvent.objects.filter(pollingEnabled=True,eventId=eventId)
     context = {}
     dict_to_render = {}
     event_feedback = []
@@ -212,6 +220,7 @@ def pollquestion(request):
     pollQuestion = ""
     client_ip = request.META['REMOTE_ADDR']
     eventId = geteventinsession(request)
+    passedQuestionId = ""
 
     if(len(eventId) < 1):
         return redirect('events')
@@ -220,11 +229,12 @@ def pollquestion(request):
     if(request.method == 'GET') and (request.GET.get('questionId')):
         passedQuestionId = request.GET.get('questionId')
         request.session['questionId'] = passedQuestionId
-        pollQuestion = PollQuestion.objects.get(pk=passedQuestionId)
         print(passedQuestionId, " in if")
     else:
         passedQuestionId = request.session['questionId']
-        print(passedQuestionId, " in else")
+        print(passedQuestionId, " in else of Poll Question function")
+
+    pollQuestion = PollQuestion.objects.get(pk=passedQuestionId)
 
 
     if(request.method == 'POST'):
@@ -289,7 +299,7 @@ def viewpollquestionresults(request):
 
 
 
-
+@login_required(login_url='/admin/')
 def getquestionresponsecount(request):
 
     questionId = request.GET.get('questionId', None)
@@ -310,3 +320,150 @@ def getquestionresponsecount(request):
     question_response_count_dict = {'count':count}
 
     return JsonResponse(question_response_count_dict)
+
+
+@login_required(login_url='/admin/')
+def resultsbyevent(request):
+
+    selected_event = ""
+    selected_event_object = ""
+    eventId = "0"
+
+    if(request.method == 'GET') and (request.GET.get('eventId')):
+        eventId = request.GET.get('eventId')
+        print('event id in session: ',eventId)
+        if(len(eventId) > 0):
+            request.session['eventId'] = eventId
+            print('event id has been set as: ',eventId)
+    else:
+        eventId = geteventinsession(request)
+
+    if(len(eventId) > 0):
+        selected_event_object = Event.objects.get(pk=eventId)
+        selected_event = selected_event_object.eventTopic
+        print('selected event topic is: ', selected_event)
+    else:
+        events_list = Event.objects.filter(eventEnable=True).order_by('eventDate')
+        if (events_list.count() > 0):
+            eventId = events_list.first().eventId
+            selected_event = events_list.first().eventTopic
+
+    events_list = Event.objects.filter(eventEnable=True).order_by('eventDate')
+
+    context = {'render_events':events_list, 'render_selected_event': selected_event, 'render_event_id': eventId}
+
+    return render(request, 'submit_app/results.html',context)
+
+
+@login_required(login_url='/admin/')
+def reports(request):
+    event_list = Event.objects.order_by('-eventDate')
+    speaker_list = Speaker.objects.order_by('firstName','lastName')
+
+    print(event_list.count())
+
+    context = { 'render_event_list':event_list, 'render_speaker_list':speaker_list }
+
+    return render(request, 'submit_app/reports.html',context)
+
+@login_required(login_url='/admin/')
+def export_csv_speakers_for_event(request):
+
+    eventId = 0
+
+    if(request.method == 'GET') and (request.GET.get('eventId')):
+        eventId = request.GET.get('eventId')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="speakers_feedback.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Event Id','Event', 'Speaker', 'Speaker Email', 'Timestamp','Participant Ip','Presentation Style',
+        'Content Relevance','Went Well','Could be better'])
+
+    speakerFeedback = SpeakerFeedback.objects.filter(eventId=eventId)
+
+    for feedback in speakerFeedback:
+        feedback_to_write = []
+        feedback_to_write.append(eventId)
+        feedback_to_write.append(feedback.eventId.eventTopic)
+        feedback_to_write.append(feedback.speakerId.firstName + " " + feedback.speakerId.lastName)
+        feedback_to_write.append(feedback.speakerId.emailId)
+        feedback_to_write.append(feedback.createDateTime)
+        feedback_to_write.append(feedback.clientIp)
+        feedback_to_write.append(feedback.presentationStyle)
+        feedback_to_write.append(feedback.contentRelevance)
+        feedback_to_write.append(feedback.wentWell)
+        feedback_to_write.append(feedback.couldBeBetter)
+
+        writer.writerow(feedback_to_write)
+
+    return response
+
+
+
+@login_required(login_url='/admin/')
+def export_csv_feedback_for_event(request):
+
+    eventId = 0
+
+    if(request.method == 'GET') and (request.GET.get('eventId')):
+        eventId = request.GET.get('eventId')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="feedback_for_event.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Event Id','Event','Timestamp','Participant Ip','Full Name','Email','Mobile','Content Quality',
+        'Content Relevance','Overall Experience','Referencable','Liked Most','Could Be Better' ])
+
+    eventFeedback = EventFeedback.objects.filter(eventId=eventId)
+
+    for feedback in eventFeedback:
+        feedback_to_write = []
+        feedback_to_write.append(eventId)
+        feedback_to_write.append(feedback.eventId.eventTopic)
+        feedback_to_write.append(feedback.createDateTime)
+        feedback_to_write.append(feedback.clientIp)
+        feedback_to_write.append(feedback.participantFullName)
+        feedback_to_write.append(feedback.participantIdEmail)
+        feedback_to_write.append(feedback.participantMobile)
+        feedback_to_write.append(feedback.contentQuality)
+        feedback_to_write.append(feedback.contentRelevance)
+        feedback_to_write.append(feedback.overallExperience)
+        feedback_to_write.append(feedback.referenceable)
+        feedback_to_write.append(feedback.likedMost)
+        feedback_to_write.append(feedback.couldBeBetter)
+
+        writer.writerow(feedback_to_write)
+
+    return response
+
+@login_required(login_url='/admin/')
+def export_csv_questions_for_event(request):
+
+    eventId = 0
+
+    if(request.method == 'GET') and (request.GET.get('eventId')):
+        eventId = request.GET.get('eventId')
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="questions_for_event.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Event Id','Event','Timestamp','Participant Ip','Question','Response',])
+
+    eventFeedback = PollQuestionFeedback.objects.filter(eventId=eventId)
+
+    for feedback in eventFeedback:
+        feedback_to_write = []
+        feedback_to_write.append(eventId)
+        feedback_to_write.append(feedback.eventId.eventTopic)
+        feedback_to_write.append(feedback.createDateTime)
+        feedback_to_write.append(feedback.clientIp)
+        feedback_to_write.append(feedback.questionId.question)
+        feedback_to_write.append(feedback.questionResponse)
+
+        writer.writerow(feedback_to_write)
+
+    return response

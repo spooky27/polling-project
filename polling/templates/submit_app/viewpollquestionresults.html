@@ -1,26 +1,41 @@
 {% extends "submit_app/base.html" %}
 {% block body_block %}
 
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'resultsbyevent' %}"">Event selection</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Poll Question</li>
+  </ol>
+</nav>
+
+
 <div class="jumbotron">
+
+  <center><h3>Results</h3></center>
   <p id="question_id" hidden>{{ question_id_render }} </p>
-  <h3> {{ poll_question_render }} </h3>
+  <h4> {{ poll_question_render }} </h4>
 
   <h5 style="display: inline">Responses: </h5>
   <h5 id="response_count" style="display: inline">{{ total_responses_render }} </h5>
   <br>
   <br>
 
-<ul>
-  {% for question, feedback_list in dict_to_render.items %}
+  {% if poll_question_render %}
+    <ul>
+      {% for question, feedback_list in dict_to_render.items %}
 
-       {% for feedback in feedback_list %}
-       <li>
-          {{ feedback }}
-       </li>
-       {% endfor %}
+           {% for feedback in feedback_list %}
+           <li>
+              {{ feedback }}
+           </li>
+           {% endfor %}
 
-  {% endfor %}
-</ul>
+      {% endfor %}
+    </ul>
+{% else %}
+     <h2>No questions enabled for polling at this time</h2>
+{% endif %}
+
 {% endblock %}
 
 

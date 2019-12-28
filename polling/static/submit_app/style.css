@@ -16,3 +16,7 @@
 body {
   background-color:  #e6f7ff;
 }   */
+
+.non-field-errors li {
+  color: red;
+}

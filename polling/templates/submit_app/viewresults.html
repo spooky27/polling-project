@@ -1,8 +1,18 @@
 {% extends "submit_app/base.html" %}
 {% block body_block %}
 
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'resultsbyevent' %}"">Event selection</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Speaker and Events</li>
+  </ol>
+</nav>
+
+
 <div class="jumbotron">
-  <h3>Live poll update:</h3>
+  <center><h3>Results</h3></center>
+  <h4>Live poll update:</h4>
   <br>
     {% if dict_to_render %}
     <table class="table table-hover">

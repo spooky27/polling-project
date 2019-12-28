@@ -13,6 +13,12 @@ CHOICES = [
     ('1','Poor'),
 ]
 
+ERRORS = {
+    'SPEAKER_FEEDBACK_FROM_SAME_IP': 'It seems you have already submitted feedback for this speaker',
+    'QUESTION_FEEDBACK_FROM_SAME_IP': 'It seems you have already submitted your response for this question',
+    'EVENT_FEEDBACK_FROM_SAME_IP': 'It seems you have already submitted your feedback for this event',
+}
+
 
 class PollSpeakerForm(forms.ModelForm):
     presentationStyle = forms.ChoiceField(widget=forms.RadioSelect( attrs={'class': 'form-check-input' } ), choices=CHOICES, label='How would you rate the presentation style of the speaker? ')
@@ -54,7 +60,7 @@ class PollSpeakerForm(forms.ModelForm):
             matchingRecords = SpeakerFeedback.objects.filter(speakerId=speakerObj,eventId=eventObj,clientIp=client_ip)
             if matchingRecords.count() > 0:
                 print("FOUND matching records!!!")
-                raise forms.ValidationError("It seems you have already submitted your feedback for this speaker")
+                raise forms.ValidationError(ERRORS['SPEAKER_FEEDBACK_FROM_SAME_IP'])
 
 
         return self.cleaned_data
@@ -106,7 +112,8 @@ class EventFeedbackForm(forms.ModelForm):
             matchingRecords = EventFeedback.objects.filter(eventId=eventObj,clientIp=client_ip)
             if matchingRecords.count() > 0:
                 print("FOUND matching records!!!")
-                raise forms.ValidationError("It seems you have already submitted your feedback for this event")
+                raise forms.ValidationError(ERRORS['EVENT_FEEDBACK_FROM_SAME_IP'])
+
 
 
         return self.cleaned_data
@@ -130,3 +137,23 @@ class PollQuestionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
       self.req = kwargs.pop('req')  # cache the user object you pass in
       super(PollQuestionForm, self).__init__(*args, **kwargs)  # and carry on to init the form
+
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if(settings.RESTRICT_MULTIPLE_POLLS):
+
+            event_id = self.req.session.get('eventId','')
+            client_ip = self.req.META['REMOTE_ADDR']
+
+            eventObj = Event.objects.get(pk=event_id)
+
+            matchingRecords = PollQuestionFeedback.objects.filter(eventId=eventObj,clientIp=client_ip)
+            if matchingRecords.count() > 0:
+              print("User has already submitted response for this question")
+              print(matchingRecords.count(), ' records found')
+              raise forms.ValidationError(ERRORS['QUESTION_FEEDBACK_FROM_SAME_IP'])
+
+
+        return self.cleaned_data

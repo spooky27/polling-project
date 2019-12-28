@@ -115,7 +115,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-RESTRICT_MULTIPLE_POLLS = False
+RESTRICT_MULTIPLE_POLLS = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
