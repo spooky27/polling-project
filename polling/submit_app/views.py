@@ -54,7 +54,7 @@ def pollspeaker(request):
     #event_speakers_list = SpeakersForEvent.objects.order_by('speakerSequence')
     #if request.METHOD == "POST":
     #g = GeoIP()
-    client_ip = request.META['REMOTE_ADDR']
+    client_ip = get_client_ip(request)
 #    lat,long = g.lat_lon(client_ip)
     print(client_ip)
 
@@ -180,7 +180,7 @@ def getpollcount(request):
 def pollevent(request):
 
     poll_submitted = False
-    client_ip = request.META['REMOTE_ADDR']
+    client_ip = get_client_ip(request)
     eventId = geteventinsession(request)
 
     if(len(eventId) < 1):
@@ -218,7 +218,7 @@ def pollquestion(request):
 
     poll_question_submitted = False
     pollQuestion = ""
-    client_ip = request.META['REMOTE_ADDR']
+    client_ip = get_client_ip(request)
     eventId = geteventinsession(request)
     passedQuestionId = ""
 
@@ -467,3 +467,12 @@ def export_csv_questions_for_event(request):
         writer.writerow(feedback_to_write)
 
     return response
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
