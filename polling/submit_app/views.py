@@ -56,6 +56,8 @@ def pollspeaker(request):
     #if request.METHOD == "POST":
     #g = GeoIP()
     client_ip = get_client_ip(request)
+    if client_ip == "NOT_A_VALID_REQUEST":
+        return redirect('events')
 #    lat,long = g.lat_lon(client_ip)
     print(client_ip)
 
@@ -182,6 +184,10 @@ def pollevent(request):
 
     poll_submitted = False
     client_ip = get_client_ip(request)
+    if client_ip == "NOT_A_VALID_REQUEST":
+        return redirect('events')
+
+
     eventId = geteventinsession(request)
 
     if(len(eventId) < 1):
@@ -220,6 +226,8 @@ def pollquestion(request):
     poll_question_submitted = False
     pollQuestion = ""
     client_ip = get_client_ip(request)
+    if client_ip == "NOT_A_VALID_REQUEST":
+        return redirect('events')
     eventId = geteventinsession(request)
     passedQuestionId = ""
 
@@ -230,10 +238,9 @@ def pollquestion(request):
     if(request.method == 'GET') and (request.GET.get('questionId')):
         passedQuestionId = request.GET.get('questionId')
         request.session['questionId'] = passedQuestionId
-        print(passedQuestionId, " in if")
+
     else:
         passedQuestionId = request.session['questionId']
-        print(passedQuestionId, " in else of Poll Question function")
 
     pollQuestion = PollQuestion.objects.get(pk=passedQuestionId)
 
@@ -316,7 +323,6 @@ def getquestionresponsecount(request):
     else:
         enabled_poll_questions = PollQuestionFeedback.objects.filter(eventId=eventId,questionId=questionId)
         count = enabled_poll_questions.count()
-        print('current count in views function: ' + str(count))
 
     question_response_count_dict = {'count':count}
 
@@ -335,14 +341,14 @@ def resultsbyevent(request):
         print('event id in session: ',eventId)
         if(len(eventId) > 0):
             request.session['eventId'] = eventId
-            print('event id has been set as: ',eventId)
+
     else:
         eventId = geteventinsession(request)
 
     if(len(eventId) > 0):
         selected_event_object = Event.objects.get(pk=eventId)
         selected_event = selected_event_object.eventTopic
-        print('selected event topic is: ', selected_event)
+
     else:
         events_list = Event.objects.filter(eventEnable=True).order_by('eventDate')
         if (events_list.count() > 0):
@@ -360,8 +366,6 @@ def resultsbyevent(request):
 def reports(request):
     event_list = Event.objects.order_by('-eventDate')
     speaker_list = Speaker.objects.order_by('firstName','lastName')
-
-    print(event_list.count())
 
     context = { 'render_event_list':event_list, 'render_speaker_list':speaker_list }
 
