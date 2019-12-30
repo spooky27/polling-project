@@ -56,8 +56,7 @@ def pollspeaker(request):
     #if request.METHOD == "POST":
     #g = GeoIP()
     client_ip = get_client_ip(request)
-    if client_ip == "NOT_A_VALID_REQUEST":
-        return redirect('events')
+    
 #    lat,long = g.lat_lon(client_ip)
     print(client_ip)
 

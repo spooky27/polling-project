@@ -5,10 +5,7 @@
 
 def get_client_ip(request):
     ip=""
-    csrf = request.META.get('CSRF_COOKIE','')
-
-    if len(csrf) < 1:
-        return "NOT_A_VALID_REQUEST"
+    user_agent = request.META.get('HTTP_USER_AGENT','')
 
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
