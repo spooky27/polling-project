@@ -14,4 +14,4 @@ def get_client_ip(request):
         ip = request.META.get('HTTP_X_REAL_IP')
     else:
         ip = request.META.get('REMOTE_ADDR')
-    return ip+'|'+csrf
+    return ip+'|'+user_agent
