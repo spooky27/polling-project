@@ -17,8 +17,6 @@ urlpatterns = [
     re_path(r'^speakers_for_event$', views.export_csv_speakers_for_event, name='export_csv_speakers_for_event'),
     re_path(r'^feedback_for_event$', views.export_csv_feedback_for_event, name='export_csv_feedback_for_event'),
     re_path(r'^questions_for_event$', views.export_csv_questions_for_event, name='export_csv_questions_for_event'),
-
-
-
+    re_path(r'^headers$', views.printheaders, name='printheaders'),
 
 ]
