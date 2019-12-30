@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Event, Speaker, SpeakerFeedback, SpeakersForEvent, EventFeedback, QuestionType, PollQuestion, EventQuestion, PollQuestionFeedback
 from django.shortcuts import redirect
+from .common import get_client_ip
 import csv
 
 
@@ -468,17 +469,6 @@ def export_csv_questions_for_event(request):
 
     return response
 
-
-def get_client_ip(request):
-    ip=""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    elif request.META.get('HTTP_X_REAL_IP'):
-        ip = request.META.get('HTTP_X_REAL_IP')
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 
 
 @login_required(login_url='/admin/')

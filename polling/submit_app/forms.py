@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from submit_app.models import SpeakerFeedback, EventFeedback, Event, Speaker, PollQuestionFeedback
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
+from .common import get_client_ip
 
 
 CHOICES = [
@@ -148,26 +149,13 @@ class PollQuestionForm(forms.ModelForm):
 
             event_id = self.req.session.get('eventId','')
             client_ip = get_client_ip(self.req)
+            questionId = self.req.session.get('questionId')
 
             eventObj = Event.objects.get(pk=event_id)
 
-            matchingRecords = PollQuestionFeedback.objects.filter(eventId=eventObj,clientIp=client_ip)
+            matchingRecords = PollQuestionFeedback.objects.filter(eventId=eventObj,clientIp=client_ip, questionId=questionId)
             if matchingRecords.count() > 0:
-              print("User has already submitted response for this question")
-              print(matchingRecords.count(), ' records found')
-              raise forms.ValidationError(ERRORS['QUESTION_FEEDBACK_FROM_SAME_IP'])
+                raise forms.ValidationError(ERRORS['QUESTION_FEEDBACK_FROM_SAME_IP'])
 
 
         return self.cleaned_data
-
-
-def get_client_ip(request):
-    ip=""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    elif request.META.get('HTTP_X_REAL_IP'):
-        ip = request.META.get('HTTP_X_REAL_IP')
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
